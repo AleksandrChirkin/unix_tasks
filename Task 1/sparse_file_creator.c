@@ -7,10 +7,8 @@
 #define BLOCK_SIZE 4096
 #define INVALID_NUMBER_OF_ARGUMENTS_MSG "Error: Invalid number of arguments: %d\n"
 #define ERROR_INPUT_FILE_MSG "Error: Failed to read from input file!\n"
-#define ERROR_OUTPUT_FILE_MSG "Error: Can't create output file!\n"
-#define BLOCK_SIZE_MSG "Error: Invalid block size (negative, zero or non-digit)\n"
-#define READ_ERROR_MSG "read error\n"
-#define WRITE_ERROR_MSG "write error\n"
+#define ERROR_OUTPUT_FILE_MSG "Error: Failed to write to output file!\n"
+#define BLOCK_SIZE_ERROR_MSG "Error: Invalid block size (negative, zero or non-digit)\n"
 #define LSEEK_ERROR_MSG "lseek error\n"
 
 int open_input(char* file){
@@ -69,7 +67,7 @@ int main(int argc, char** argv) {
         return terminate_with_exception(ERROR_OUTPUT_FILE_MSG, input_fd, output_fd);
     }
     if (block_size <= 0) {
-        return terminate_with_exception(BLOCK_SIZE_MSG, input_fd, output_fd);
+        return terminate_with_exception(BLOCK_SIZE_ERROR_MSG, input_fd, output_fd);
     }
     char write_buffer[block_size];
     char read_buffer[block_size];
@@ -78,7 +76,7 @@ int main(int argc, char** argv) {
     int i, write_result, lseek_result;
     while (block_size = read(input_fd, read_buffer, block_size)) {
         if (block_size == -1) {
-            return terminate_with_exception(READ_ERROR_MSG, input_fd, output_fd);
+            return terminate_with_exception(ERROR_INPUT_FILE_MSG, input_fd, output_fd);
         }
         i = 0;
         while (i < block_size) {
@@ -90,7 +88,7 @@ int main(int argc, char** argv) {
                 write_result = write(output_fd, write_buffer, write_bytes);
                 if (write_result == -1)
                 {
-                    return terminate_with_exception(WRITE_ERROR_MSG, input_fd, output_fd);
+                    return terminate_with_exception(ERROR_OUTPUT_FILE_MSG, input_fd, output_fd);
                 }
                 write_bytes = 0;
             }
