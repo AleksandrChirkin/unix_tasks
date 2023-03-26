@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define BLOCK_SIZE 4096
 #define INVALID_NUMBER_OF_ARGUMENTS_MSG "Error: Invalid number of arguments: %d\n"
@@ -11,7 +12,6 @@
 #define READ_ERROR_MSG "read error\n"
 #define WRITE_ERROR_MSG "write error\n"
 #define LSEEK_ERROR_MSG "lseek error\n"
-#define SUCCESS_MSG "Sparse file %s created successfully!\n"
 
 int open_input(char* file){
     return open(file, O_RDONLY);
@@ -27,54 +27,48 @@ void close_fds(int input_fd, int output_fd){
 }
 
 int terminate_with_exception(char* msg, int input_fd, int output_fd){
-    printf(msg);
+    perror(msg);
     close_fds(input_fd, output_fd);
     return 1;
 }
 
 int main(int argc, char** argv) {
     int block_size = BLOCK_SIZE;
-    char* sparse_file_name;
-    int input_fd, second_arg;
+    int input_fd, output_fd, second_arg;
 
     switch (argc) {
         case 2:
             input_fd = STDIN_FILENO;
-            sparse_file_name = argv[1];
+            output_fd = open_output(argv[1]);
             break;
         case 4:
             input_fd = open_input(argv[1]);
-            sparse_file_name = argv[2];
+            output_fd = open_output(argv[2]);
             block_size = atoi(argv[3]);
             break;
         case 3:
             second_arg = atoi(argv[2]);
-            if (second_arg)
-            {
+            if (second_arg || !strcmp(argv[2], "0")) {
                 input_fd = STDIN_FILENO;
-                sparse_file_name = argv[1];
+                output_fd = open_output(argv[1]);
                 block_size = second_arg;
             }
-            else
-            {
+            else {
                 input_fd = open_input(argv[1]);
-                sparse_file_name = argv[2];
+                output_fd = open_output(argv[2]);
             }
             break;
         default:
-            printf(INVALID_NUMBER_OF_ARGUMENTS_MSG, argc - 1);
+            fprintf(stderr, INVALID_NUMBER_OF_ARGUMENTS_MSG, argc - 1);
             return 1;
     }
-    int output_fd = open_output(sparse_file_name);
+    if (input_fd == -1) {
+        return terminate_with_exception(ERROR_INPUT_FILE_MSG, input_fd, output_fd);
+    }
     if (output_fd == -1) {
         return terminate_with_exception(ERROR_OUTPUT_FILE_MSG, input_fd, output_fd);
     }
-    if (input_fd == -1)
-    {
-        return terminate_with_exception(ERROR_INPUT_FILE_MSG, input_fd, output_fd);
-    }
-    if (block_size <= 0)
-    {
+    if (block_size <= 0) {
         return terminate_with_exception(BLOCK_SIZE_MSG, input_fd, output_fd);
     }
     char write_buffer[block_size];
@@ -113,7 +107,6 @@ int main(int argc, char** argv) {
             }
         }
     }
-    printf(SUCCESS_MSG, sparse_file_name);
     close_fds(input_fd, output_fd);
     return 0;
 }
