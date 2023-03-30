@@ -69,39 +69,29 @@ int main(int argc, char** argv) {
     if (block_size <= 0) {
         return terminate_with_exception(BLOCK_SIZE_ERROR_MSG, input_fd, output_fd);
     }
-    char write_buffer[block_size];
-    char read_buffer[block_size];
-    int zero_bytes = 0;
-    int write_bytes = 0;
+    char buffer[block_size];
+    int is_block_empty;
     int i, write_result, lseek_result;
-    while (block_size = read(input_fd, read_buffer, block_size)) {
+    while (block_size = read(input_fd, buffer, block_size)) {
         if (block_size == -1) {
             return terminate_with_exception(ERROR_INPUT_FILE_MSG, input_fd, output_fd);
         }
-        i = 0;
-        while (i < block_size) {
-            for (; i < block_size && read_buffer[i] != 0; i++) {
-                write_buffer[write_bytes] = read_buffer[i];
-                write_bytes++;
+        is_block_empty = 1;
+        for (i = 0; i < block_size; i++) {
+            if (buffer[i] != 0)
+                is_block_empty = 0;
+        }
+        if (is_block_empty) {
+            lseek_result = lseek(output_fd, block_size, SEEK_CUR);
+            if (lseek_result == -1)
+            {
+                return terminate_with_exception(LSEEK_ERROR_MSG, input_fd, output_fd);
             }
-            if (write_bytes != 0) {
-                write_result = write(output_fd, write_buffer, write_bytes);
-                if (write_result == -1)
-                {
-                    return terminate_with_exception(ERROR_OUTPUT_FILE_MSG, input_fd, output_fd);
-                }
-                write_bytes = 0;
-            }
-            for (; i < block_size && read_buffer[i] == 0; i++) {
-                zero_bytes++;
-            }
-            if (zero_bytes != 0) {
-                lseek_result = lseek(output_fd, zero_bytes, SEEK_CUR);
-                if (lseek_result == -1)
-                {
-                    return terminate_with_exception(LSEEK_ERROR_MSG, input_fd, output_fd);
-                }
-                zero_bytes = 0;
+        } else {
+            write_result = write(output_fd, buffer, block_size);
+            if (write_result == -1)
+            {
+                return terminate_with_exception(ERROR_OUTPUT_FILE_MSG, input_fd, output_fd);
             }
         }
     }
