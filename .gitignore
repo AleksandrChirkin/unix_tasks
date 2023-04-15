@@ -2,3 +2,6 @@
 file*
 sparse_file_creator
 result.txt
+myfile
+flock_checker
+stats.txt
