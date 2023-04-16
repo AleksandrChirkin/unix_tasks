@@ -12,7 +12,7 @@
 #define LOCK_OPEN_ERROR_MSG "An error occurred while opening lock file %s\n"
 #define LOCK_WRITE_ERROR_MSG "An error occurred while writing to lock file %s\n"
 #define LOCK_READ_ERROR_MSG "An error occurred while reading from lock file %s\n"
-#define LOCK_BY_ANOTHER_PROCESS "File %s has been already locked by another process with pid %s (current pid=%s)\n"
+#define LOCK_BY_ANOTHER_PROCESS "File %s has already been locked by another process with pid %s (current pid=%s)\n"
 #define FILE_OPEN_ERROR_MSG "An error occurred while opening file %s\n"
 #define FILE_WRITE_ERROR_MSG "An error occurred while writing to file %s\n"
 #define SIGINT_ERROR "An error with code %d occurred while handling SIGINT\n"
@@ -78,9 +78,11 @@ int main(int argc, char** argv) {
     sprintf(lck_file_name, "%s.lck", file_name);
 
     pid = getpid();
-    int pid_len = (int) ((ceil(log10(pid)) + 1) * sizeof(char));
+    int pid_len = (int) ((ceil(log10(pid))) * sizeof(char));
     char *pid_bytes = (char*) malloc(pid_len);
-    sprintf(pid_bytes, "%d\n", pid);
+    char *pid_bytes_with_nl = (char*) malloc(pid_len + sizeof(char));
+    sprintf(pid_bytes, "%d", pid);
+    sprintf(pid_bytes_with_nl, "%d\n", pid);
 
     int lock_fd, fd, written, read_bytes;
     char read_buffer[pid_len];
@@ -92,7 +94,7 @@ int main(int argc, char** argv) {
             sleep(0.1);
         }
 
-        written = write(lock_fd, pid_bytes, pid_len);
+        written = write(lock_fd, pid_bytes_with_nl, pid_len);
         if (written == -1)
             return handle_file_exception(LOCK_WRITE_ERROR_MSG, lck_file_name, fd, lock_fd);
 
