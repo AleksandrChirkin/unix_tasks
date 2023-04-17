@@ -89,9 +89,14 @@ int main(int argc, char** argv) {
 
     while(running) {
         lock_fd = -1;
-        while (lock_fd == -1) {
+        while (lock_fd == -1 && running) {
             lock_fd = open(lck_file_name, O_CREAT | O_EXCL | O_WRONLY, 0600);
             sleep(0.1);
+        }
+        if (!running) {
+            close(lock_fd);
+            remove(lck_file_name);
+            break;
         }
 
         written = write(lock_fd, pid_bytes_with_nl, pid_len);
