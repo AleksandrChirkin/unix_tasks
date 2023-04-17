@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
         if (fd == -1)
             return handle_file_exception(FILE_OPEN_ERROR_MSG, file_name, fd, lock_fd);
 
-        written = write(fd, pid_bytes, pid_len);
+        written = write(fd, pid_bytes_with_nl, pid_len + 1);
         if (written == -1)
             return handle_file_exception(FILE_WRITE_ERROR_MSG, file_name, fd, lock_fd);
 
