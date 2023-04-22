@@ -6,11 +6,11 @@
 #include <signal.h>
 #include <errno.h>
 
-#define STAT_TEMPLATE "%d: Successful locks number: %d\n"
+#define STAT_TEMPLATE "%1$d: Successful locks number: %2$d\n"
 #define LOCK_OPEN_ERROR_MSG "%d: An error occurred while opening lock file %s\n"
 #define LOCK_WRITE_ERROR_MSG "%d: An error occurred while writing to lock file %s\n"
 #define LOCK_READ_ERROR_MSG "%d: An error occurred while reading from lock file %s\n"
-#define LOCK_BY_ANOTHER_PROCESS "%d: File %s has already been locked by another process with pid %s\n"
+#define LOCK_BY_ANOTHER_PROCESS "%d: File %s has already been locked by another process with pid %d\n"
 #define FILE_OPEN_ERROR_MSG "%d: An error occurred while opening file %s\n"
 #define FILE_WRITE_ERROR_MSG "%d: An error occurred while writing to file %s\n"
 
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     sprintf(pid_bytes, "%d", pid);
     sprintf(pid_bytes_with_nl, "%d\n", pid);
 
-    int lock_fd, fd;
+    int lock_fd, fd, read_pid;
     ssize_t read_bytes, written;
     char read_buffer[pid_len];
 
@@ -107,9 +107,9 @@ int main(int argc, char** argv) {
         read_bytes = read(lock_fd, read_buffer, pid_len);
         if (read_bytes == -1)
             return handle_file_exception(LOCK_READ_ERROR_MSG,  lck_file_name, pid, fd, lock_fd);
-
-        if (strcmp(read_buffer, pid_bytes) != 0) {
-            fprintf(stderr, LOCK_BY_ANOTHER_PROCESS, pid, file_name, read_buffer);
+	read_pid = atoi(read_buffer);
+        if (read_pid != pid) {
+            fprintf(stderr, LOCK_BY_ANOTHER_PROCESS, pid, file_name, read_pid);
             return 1;
         }
 
