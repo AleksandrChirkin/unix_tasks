@@ -2,6 +2,5 @@
 file*
 sparse_file_creator
 result.txt
-myfile
+myfile*
 flock_checker
-stats.txt

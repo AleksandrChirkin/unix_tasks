@@ -3,10 +3,9 @@ log_to_result() {
 }
 
 rm -f stats.txt result.txt myfile*
-touch myfile
 
 log_to_result 'Compiling file lock checker'
-make && log_to_result 'File lock checker compiled successfully!'
+make flock_checker && log_to_result 'File lock checker compiled successfully!'
 chmod 700 flock_checker
 
 log_to_result 'Checking that lock fails after deleting .lck file'
@@ -21,7 +20,7 @@ cat myfile >> result.txt
 log_to_result 'Checking lock for 10 parallel tasks'
 for _ in {1..10}
 do
- ( ./flock_checker -s myfile ) &
+ ( ./flock_checker -s myfile >> result.txt ) &
 done
 sleep 300
 log_to_result 'Killing tasks with SIGINT'
