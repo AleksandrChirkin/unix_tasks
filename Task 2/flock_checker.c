@@ -6,7 +6,7 @@
 #include <signal.h>
 #include <errno.h>
 
-#define STAT_TEMPLATE "%1$d: Successful locks number: %2$d\n"
+#define STAT_TEMPLATE "%d: Successful locks number: %d\n"
 #define LOCK_OPEN_ERROR_MSG "%d: An error occurred while opening lock file %s\n"
 #define LOCK_WRITE_ERROR_MSG "%d: An error occurred while writing to lock file %s\n"
 #define LOCK_READ_ERROR_MSG "%d: An error occurred while reading from lock file %s\n"
@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
         read_bytes = read(lock_fd, read_buffer, pid_len);
         if (read_bytes == -1)
             return handle_file_exception(LOCK_READ_ERROR_MSG,  lck_file_name, pid, fd, lock_fd);
-	read_pid = atoi(read_buffer);
+	    read_pid = atoi(read_buffer);
         if (read_pid != pid) {
             fprintf(stderr, LOCK_BY_ANOTHER_PROCESS, pid, file_name, read_pid);
             return 1;
