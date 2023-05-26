@@ -5,3 +5,9 @@ result.txt
 myfile*
 flock_checker
 myinit
+bigfile
+config.txt
+numbers.txt
+client
+server
+test_client
